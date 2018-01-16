@@ -1,0 +1,174 @@
+allprojects {
+    group = "com.github.tiger.ai"
+
+    apply plugin: "maven"
+
+    System.properties["file.encoding"] = "UTF-8"
+
+    repositories {
+        mavenLocal() // USER_HOME/.m2/repository
+        maven {
+            url "http://maven.aliyun.com/nexus/content/groups/public/"
+        }
+        mavenCentral() // https://repo.maven.apache.org/maven2/
+    }
+}
+
+subprojects {
+
+    apply plugin: "java"
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    [compileJava, compileTestJava]*.options*.encoding = "UTF-8"
+
+    ext {
+        profile = System.getProperty("env", "qa")
+
+        //<--------------- dependencies ---------------->
+
+        /**
+         * junit
+         */
+        junitVersion = "4.12"
+        /**
+         * logging
+         */
+        log4jVersion = '1.2.17'
+        slf4jVersion = '1.7.25'
+        log4j2Version = '2.8.1'
+        gelfVersion = '1.11.0'
+        /**
+         * apache
+         */
+        beanutilsVersion = "1.9.3"
+        lang3Version = "3.7"
+        httpclientVersion = "4.5.4"
+        zookeeperVersion = "3.4.10"
+        curatorVersion = "2.12.0"
+        poiVersion = "3.17"
+        /**
+         * spring
+         */
+        springVersion = "4.2.5.RELEASE"
+        /**
+         * google
+         */
+        guavaVersion = "20.0"
+        gsonVersion = "2.8.2"
+    }
+
+    jar {
+        manifest {
+            attributes "Package": "com.github.tiger.recommend",
+                    "Implementation-Vendor": "Jason Liuhongming",
+                    "Built-By": "Jason Liuhongming",
+                    "Built-Date": new Date().getDateTimeString(),
+                    "Built-With": "gradle-${project.getGradle().getGradleVersion()}, " +
+                            "groovy-${GroovySystem.getVersion()}",
+                    "Created-By": "Java " + System.getProperty("java.version") +
+                            " (" + System.getProperty("java.vendor") + ")"
+        }
+    }
+
+    dependencies {
+        /**
+         * junit
+         */
+        testCompile "junit:junit:$junitVersion"
+
+        /**
+         * logging
+         */
+        compile(
+                "log4j:log4j:$log4jVersion",
+                "org.slf4j:slf4j-api:$slf4jVersion",
+                "org.slf4j:jcl-over-slf4j:$slf4jVersion",
+                "org.apache.logging.log4j:log4j-core:$log4j2Version",
+                "org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version",
+                "biz.paluch.logging:logstash-gelf:$gelfVersion"
+        )
+        /**
+         * apache
+         */
+        compile(
+                "commons-beanutils:commons-beanutils:$beanutilsVersion",
+                "org.apache.commons:commons-lang3:$lang3Version",
+                "org.apache.httpcomponents:httpclient:$httpclientVersion",
+                "org.apache.curator:curator-recipes:$curatorVersion",
+                "org.apache.zookeeper:zookeeper:$zookeeperVersion"
+        )
+        /**
+         * spring
+         */
+        compile("org.springframework:spring-beans:$springVersion") {
+            exclude(group: "commons-logging")
+        }
+        /**
+         * google
+         */
+        compile(
+                "com.google.guava:guava:$guavaVersion",
+                "com.google.code.gson:gson:$gsonVersion"
+        )
+    }
+
+    test {
+        useJUnit()
+
+        exclude("**/tiger/**/test/**")
+    }
+
+    /**
+     * 生成目标目录
+     */
+    task mkdirs << {
+        file('build/target/bin').mkdirs()
+        file('build/target/conf').mkdirs()
+        file('build/target/libs').mkdirs()
+    }
+
+    /**
+     * 复制生成的jar包
+     */
+    task copyLibs(type: Copy) {
+        from('build/libs')
+        into('build/target')
+    }
+
+    /**
+     * 复制配置文件
+     */
+    task copyConf(type: Copy) {
+        from sourceSets.main.output.resourcesDir
+        into 'build/target/conf'
+    }
+
+    /**
+     * 导出依赖包
+     */
+    task copyJars(type: Copy) {
+        from configurations.runtime
+        into 'build/target/libs'
+    }
+
+    /**
+     * 准备
+     */
+    task prepare(dependsOn: [
+            'mkdirs',
+            'copyLibs',
+            'copyConf',
+            'copyJars'
+    ]) {}
+
+
+    /**
+     * 发布
+     */
+    task release(dependsOn: [clean, build, prepare]) {
+    }
+
+}
+
+defaultTasks 'clean', 'jar'
