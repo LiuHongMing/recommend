@@ -22,6 +22,42 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
     [compileJava, compileTestJava]*.options*.encoding = "UTF-8"
 
+    /**
+     * 发布配置
+     */
+    apply plugin: 'maven-publish'
+
+    task sourceJar(type: Jar) {
+        from sourceSets.main.allJava
+    }
+
+    publishing {
+        publications {
+            push(MavenPublication) {
+                from components.java
+
+                artifact sourceJar {
+                    classifier "sources"
+                }
+            }
+        }
+        repositories {
+            maven {
+
+                if (project.version.endsWith('-SNAPSHOT')) {
+                    url = "http://172.17.0.59:8081/nexus/content/repositories/snapshots"
+                } else {
+                    url = "http://172.17.0.59:8081/nexus/content/repositories/releases"
+                }
+
+                credentials {
+                    username 'admin'
+                    password 'admin123'
+                }
+            }
+        }
+    }
+
     ext {
         profile = System.getProperty("env", "qa")
 
@@ -41,8 +77,9 @@ subprojects {
         /**
          * apache
          */
+        commonscliVersion = "1.4"
+        commonslang3Version = "3.7"
         beanutilsVersion = "1.9.3"
-        lang3Version = "3.7"
         httpclientVersion = "4.5.4"
         zookeeperVersion = "3.4.10"
         curatorVersion = "2.12.0"
@@ -61,8 +98,6 @@ subprojects {
     jar {
         manifest {
             attributes "Package": "com.github.tiger.recommend",
-                    "Implementation-Vendor": "Jason Liuhongming",
-                    "Built-By": "Jason Liuhongming",
                     "Built-Date": new Date().getDateTimeString(),
                     "Built-With": "gradle-${project.getGradle().getGradleVersion()}, " +
                             "groovy-${GroovySystem.getVersion()}",
@@ -81,7 +116,6 @@ subprojects {
          * logging
          */
         compile(
-                "log4j:log4j:$log4jVersion",
                 "org.slf4j:slf4j-api:$slf4jVersion",
                 "org.slf4j:jcl-over-slf4j:$slf4jVersion",
                 "org.apache.logging.log4j:log4j-core:$log4j2Version",
@@ -91,18 +125,28 @@ subprojects {
         /**
          * apache
          */
-        compile(
-                "commons-beanutils:commons-beanutils:$beanutilsVersion",
-                "org.apache.commons:commons-lang3:$lang3Version",
-                "org.apache.httpcomponents:httpclient:$httpclientVersion",
-                "org.apache.curator:curator-recipes:$curatorVersion",
-                "org.apache.zookeeper:zookeeper:$zookeeperVersion"
-        )
+        compile("commons-cli:commons-cli:$commonscliVersion")
+        compile("org.apache.commons:commons-lang3:$commonslang3Version")
+        compile("commons-beanutils:commons-beanutils:$beanutilsVersion") {
+            exclude group: "commons-logging"
+        }
+        compile("org.apache.httpcomponents:httpclient:$httpclientVersion") {
+            exclude group: "commons-logging"
+        }
+        compile("org.apache.curator:curator-recipes:$curatorVersion") {
+            exclude group: "log4j"
+            exclude group: "org.slf4j"
+            exclude(group: "org.apache.zookeeper")
+        }
+        compile("org.apache.zookeeper:zookeeper:$zookeeperVersion") {
+            exclude group: "log4j"
+            exclude group: "org.slf4j"
+        }
         /**
          * spring
          */
         compile("org.springframework:spring-beans:$springVersion") {
-            exclude(group: "commons-logging")
+            exclude group: "commons-logging"
         }
         /**
          * google
@@ -120,28 +164,38 @@ subprojects {
     }
 
     /**
-     * 生成目标目录
+     * 生成target
      */
-    task mkdirs << {
-        file('build/target/bin').mkdirs()
-        file('build/target/conf').mkdirs()
-        file('build/target/libs').mkdirs()
+    task mkDirs {
+        doLast {
+            file('build/target/bin').mkdirs()
+            file('build/target/classes').mkdirs()
+            file('build/target/jars').mkdirs()
+        }
     }
 
     /**
-     * 复制生成的jar包
+     * 导出jar
      */
     task copyLibs(type: Copy) {
-        from('build/libs')
-        into('build/target')
+        from 'build/libs'
+        into 'build/target'
     }
 
     /**
-     * 复制配置文件
+     * 导出classes
+     */
+    task copyClasses(type: Copy) {
+        from sourceSets.main.output.classesDirs
+        into 'build/target/classes'
+    }
+
+    /**
+     * 导出配置文件
      */
     task copyConf(type: Copy) {
         from sourceSets.main.output.resourcesDir
-        into 'build/target/conf'
+        into 'build/target/classes'
     }
 
     /**
@@ -149,26 +203,36 @@ subprojects {
      */
     task copyJars(type: Copy) {
         from configurations.runtime
-        into 'build/target/libs'
+        into 'build/target/jars'
     }
 
     /**
-     * 准备
+     * 装备
      */
-    task prepare(dependsOn: [
-            'mkdirs',
-            'copyLibs',
-            'copyConf',
-            'copyJars'
-    ]) {}
+    task prepare {
+        dependsOn 'mkDirs'
+        dependsOn 'copyClasses', 'copyConf', 'copyJars'
+    }
 
+    /**
+     * 构建
+     */
+    task whole(dependsOn: ['build', 'prepare'])
 
     /**
      * 发布
      */
-    task release(dependsOn: [clean, build, prepare]) {
-    }
+    task release(dependsOn: ['clean', 'whole'])
 
+    /**
+     * 打tar包
+     */
+    task buildTar(type: Tar, dependsOn: ['release']) {
+        from 'build/target'
+        compression = Compression.GZIP
+        extension = 'tar.gz'
+        destinationDir = file('build')
+    }
 }
 
 defaultTasks 'clean', 'jar'

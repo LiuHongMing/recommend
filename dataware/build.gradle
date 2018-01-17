@@ -1,41 +1,5 @@
 version '1.0.0-SNAPSHOT'
 
-/**
- * 发布配置
- */
-apply plugin: 'maven-publish'
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-}
-
-publishing {
-    publications {
-        push(MavenPublication) {
-            from components.java
-
-            artifact sourceJar {
-                classifier "sources"
-            }
-        }
-    }
-    repositories {
-        maven {
-
-            if (project.version.endsWith('-SNAPSHOT')) {
-                url = "http://172.17.0.59:8081/nexus/content/repositories/snapshots"
-            } else {
-                url = "http://172.17.0.59:8081/nexus/content/repositories/releases"
-            }
-
-            credentials {
-                username 'admin'
-                password 'admin123'
-            }
-        }
-    }
-}
-
 ext {
     /**
      * netflix
@@ -61,12 +25,6 @@ sourceSets {
             srcDirs = ["src/main/resources", "env/${profile}"]
         }
     }
-}
-
-test {
-    useJUnit()
-
-    exclude("**/tiger/**/test/**")
 }
 
 dependencies {
