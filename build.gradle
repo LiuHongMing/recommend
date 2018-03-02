@@ -68,6 +68,10 @@ subprojects {
          */
         junitVersion = "4.12"
         /**
+         * testng
+         */
+        testngVersion = "6.10"
+        /**
          * logging
          */
         log4jVersion = '1.2.17'
@@ -111,6 +115,10 @@ subprojects {
          * junit
          */
         testCompile "junit:junit:$junitVersion"
+        /**
+         * testng
+         */
+        testCompile "org.testng:testng:$testngVersion"
 
         /**
          * logging
@@ -158,7 +166,7 @@ subprojects {
     }
 
     test {
-        useJUnit()
+        useTestNG()
 
         exclude("**/tiger/**/test/**")
     }
