@@ -19,14 +19,6 @@ ext {
     yamlVersion = "1.18"
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs = ["src/main/resources", "env/${profile}"]
-        }
-    }
-}
-
 dependencies {
     /**
      * netflix
@@ -50,4 +42,9 @@ dependencies {
      * yml
      */
     compile "org.yaml:snakeyaml:$yamlVersion"
+
+    /**
+     * :compute
+     */
+    compile project(":compute")
 }

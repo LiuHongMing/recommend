@@ -19,17 +19,9 @@ ext {
     yamlVersion = "1.18"
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs = ["src/main/resources", "env/${profile}"]
-        }
-    }
-}
-
 jar {
     manifest {
-        attributes 'Main-Class': 'com.github.tiger.recommand.bootstrap.Main',
+        attributes 'Main-Class': 'com.github.tiger.recommand.compute.Main',
                 "Implementation-Title": "${project.name}",
                 "Implementation-Version": "${version}"
     }

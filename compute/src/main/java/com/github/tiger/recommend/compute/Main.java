@@ -1,4 +1,4 @@
-package com.github.tiger.recommend.main;
+package com.github.tiger.recommend.compute;
 
 /**
  * @author liuhongming
