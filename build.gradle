@@ -1,7 +1,12 @@
 allprojects {
     group = "com.github.tiger.ai"
 
+    apply plugin: 'idea'
     apply plugin: "maven"
+    apply plugin: "jacoco"
+//    apply plugin: 'checkstyle'
+//    apply plugin: 'findbugs'
+//    apply plugin: 'pmd'
 
     System.properties["file.encoding"] = "UTF-8"
 
@@ -43,7 +48,6 @@ subprojects {
         }
         repositories {
             maven {
-
                 if (project.version.endsWith('-SNAPSHOT')) {
                     url = "http://172.17.0.59:8081/nexus/content/repositories/snapshots"
                 } else {
@@ -59,9 +63,16 @@ subprojects {
     }
 
     ext {
-        profile = System.getProperty("env", "qa")
+        // profiles
 
-        //<--------------- dependencies ---------------->
+        if (project.hasProperty('profile')) {
+            profile = project['profile']
+        } else {
+            profile = "dev"
+        }
+        println "[profile]:" + profile
+
+        // dependencies
 
         /**
          * junit
@@ -97,6 +108,14 @@ subprojects {
          */
         guavaVersion = "20.0"
         gsonVersion = "2.8.2"
+    }
+
+    sourceSets {
+        main {
+            resources {
+                srcDir "src/main/profiles/${profile}"
+            }
+        }
     }
 
     jar {
@@ -165,10 +184,78 @@ subprojects {
         )
     }
 
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+            html.enabled true
+            csv.enabled false
+        }
+        sourceSets sourceSets.main
+    }
+
+//    checkstyle {
+//        ignoreFailures = true
+//        sourceSets = [sourceSets.main]
+//    }
+
+//    findbugs {
+//        ignoreFailures = true
+//        sourceSets = [sourceSets.main]
+//    }
+//
+//    pmd {
+//        ruleSets = ["basic", "braces", "design"]
+//        ignoreFailures = true
+//        sourceSets = [sourceSets.main]
+//    }
+
+    /**
+     * 关闭编译警告
+     */
+    tasks.withType(JavaCompile) {
+        /**
+         * Try to turn them all off automatically
+         */
+        options.compilerArgs << '-Xlint:none'
+
+        /**
+         * same as '-Xlint:none'
+         */
+        options.compilerArgs << '-nowarn'
+
+        /**
+         * Turn them off manually
+         */
+        options.compilerArgs << '-Xlint:-auxiliaryclass'
+        options.compilerArgs << '-Xlint:-cast'
+        options.compilerArgs << '-Xlint:-classfile'
+        options.compilerArgs << '-Xlint:-deprecation'
+        options.compilerArgs << '-Xlint:-dep-ann'
+        options.compilerArgs << '-Xlint:-divzero'
+        options.compilerArgs << '-Xlint:-empty'
+        options.compilerArgs << '-Xlint:-fallthrough'
+        options.compilerArgs << '-Xlint:-finally'
+        options.compilerArgs << '-Xlint:-options'
+        options.compilerArgs << '-Xlint:-overloads'
+        options.compilerArgs << '-Xlint:-overrides'
+        options.compilerArgs << '-Xlint:-path'
+        options.compilerArgs << '-Xlint:-processing'
+        options.compilerArgs << '-Xlint:-rawtypes'
+        options.compilerArgs << '-Xlint:-serial'
+        options.compilerArgs << '-Xlint:-static'
+        options.compilerArgs << '-Xlint:-try'
+        options.compilerArgs << '-Xlint:-unchecked'
+        options.compilerArgs << '-Xlint:-varargs'
+    }
+
     test {
         useTestNG()
 
         exclude("**/tiger/**/test/**")
+
+        jacoco {
+            excludes = ["**/tiger/**/test/**"]
+        }
     }
 
     /**

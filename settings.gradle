@@ -1,4 +1,6 @@
 rootProject.name = 'recommend'
-include 'service'
+include 'commons'
 include 'compute'
 include 'dataware'
+include 'service'
+
