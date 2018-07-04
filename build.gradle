@@ -23,9 +23,49 @@ subprojects {
 
     apply plugin: "java"
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-    [compileJava, compileTestJava]*.options*.encoding = "UTF-8"
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+
+        /**
+         * 关闭编译警告
+         */
+        
+        /**
+         * Try to turn them all off automatically
+         */
+        options.compilerArgs << '-Xlint:none'
+
+        /**
+         * same as '-Xlint:none'
+         */
+        options.compilerArgs << '-nowarn'
+
+        /**
+         * Turn them off manually
+         */
+        options.compilerArgs << '-Xlint:-auxiliaryclass'
+        options.compilerArgs << '-Xlint:-cast'
+        options.compilerArgs << '-Xlint:-classfile'
+        options.compilerArgs << '-Xlint:-deprecation'
+        options.compilerArgs << '-Xlint:-dep-ann'
+        options.compilerArgs << '-Xlint:-divzero'
+        options.compilerArgs << '-Xlint:-empty'
+        options.compilerArgs << '-Xlint:-fallthrough'
+        options.compilerArgs << '-Xlint:-finally'
+        options.compilerArgs << '-Xlint:-options'
+        options.compilerArgs << '-Xlint:-overloads'
+        options.compilerArgs << '-Xlint:-overrides'
+        options.compilerArgs << '-Xlint:-path'
+        options.compilerArgs << '-Xlint:-processing'
+        options.compilerArgs << '-Xlint:-rawtypes'
+        options.compilerArgs << '-Xlint:-serial'
+        options.compilerArgs << '-Xlint:-static'
+        options.compilerArgs << '-Xlint:-try'
+        options.compilerArgs << '-Xlint:-unchecked'
+        options.compilerArgs << '-Xlint:-varargs'
+    }
 
     /**
      * 发布配置
@@ -209,44 +249,6 @@ subprojects {
 //        sourceSets = [sourceSets.main]
 //    }
 
-    /**
-     * 关闭编译警告
-     */
-    tasks.withType(JavaCompile) {
-        /**
-         * Try to turn them all off automatically
-         */
-        options.compilerArgs << '-Xlint:none'
-
-        /**
-         * same as '-Xlint:none'
-         */
-        options.compilerArgs << '-nowarn'
-
-        /**
-         * Turn them off manually
-         */
-        options.compilerArgs << '-Xlint:-auxiliaryclass'
-        options.compilerArgs << '-Xlint:-cast'
-        options.compilerArgs << '-Xlint:-classfile'
-        options.compilerArgs << '-Xlint:-deprecation'
-        options.compilerArgs << '-Xlint:-dep-ann'
-        options.compilerArgs << '-Xlint:-divzero'
-        options.compilerArgs << '-Xlint:-empty'
-        options.compilerArgs << '-Xlint:-fallthrough'
-        options.compilerArgs << '-Xlint:-finally'
-        options.compilerArgs << '-Xlint:-options'
-        options.compilerArgs << '-Xlint:-overloads'
-        options.compilerArgs << '-Xlint:-overrides'
-        options.compilerArgs << '-Xlint:-path'
-        options.compilerArgs << '-Xlint:-processing'
-        options.compilerArgs << '-Xlint:-rawtypes'
-        options.compilerArgs << '-Xlint:-serial'
-        options.compilerArgs << '-Xlint:-static'
-        options.compilerArgs << '-Xlint:-try'
-        options.compilerArgs << '-Xlint:-unchecked'
-        options.compilerArgs << '-Xlint:-varargs'
-    }
 
     test {
         useTestNG()
