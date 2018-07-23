@@ -1,4 +1,10 @@
+/**
+ * 设置该项目及其子项目
+ *
+ * 项目自身需要使用的资源
+ */
 allprojects {
+
     group = "com.github.tiger.ai"
 
     apply plugin: 'idea'
@@ -8,8 +14,6 @@ allprojects {
 //    apply plugin: 'findbugs'
 //    apply plugin: 'pmd'
 
-    System.properties["file.encoding"] = "UTF-8"
-
     repositories {
         mavenLocal() // USER_HOME/.m2/repository
         maven {
@@ -17,8 +21,14 @@ allprojects {
         }
         mavenCentral() // https://repo.maven.apache.org/maven2/
     }
+
+    System.properties["file.encoding"] = "UTF-8"
+
 }
 
+/**
+ * 设置该项目的子项目
+ */
 subprojects {
 
     apply plugin: "java"
@@ -32,7 +42,7 @@ subprojects {
         /**
          * 关闭编译警告
          */
-        
+
         /**
          * Try to turn them all off automatically
          */

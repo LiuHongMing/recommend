@@ -1,5 +1,46 @@
 version '1.0.0-SNAPSHOT'
 
+/**
+ * 构建脚本处理器
+ *
+ * gradle自身需要使用的资源
+ */
+buildscript {
+
+    ext {
+        jibVersion = "0.9.2"
+    }
+
+    /**
+     * Build script snippet for plugins DSL
+     *
+     * for Gradle 2.1 and later
+     */
+//    plugins {
+//        id "com.google.cloud.tools.jib" version "0.9.3"
+//    }
+
+    /**
+     * Build script snippet for use in older Gradle versions
+     *
+     * or where dynamic configuration is required
+     */
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url "http://maven.aliyun.com/nexus/content/groups/public/"
+        }
+    }
+
+    dependencies {
+        classpath "gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:${jibVersion}"
+    }
+}
+
+apply plugin: "com.google.cloud.tools.jib"
+
 ext {
     /**
      * netflix
