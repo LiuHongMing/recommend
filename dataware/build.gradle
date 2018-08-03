@@ -19,6 +19,21 @@ ext {
     yamlVersion = "1.18"
 }
 
+/**
+ * 在全局配置中排除
+ */
+configurations {
+    compile.exclude group: "log4j"
+    all*.exclude group: 'log4j', module: 'log4j'
+}
+
+/**
+ * 禁止传递依赖
+ */
+configurations.all {
+    transitive = false
+}
+
 dependencies {
     /**
      * netflix
@@ -46,5 +61,14 @@ dependencies {
     /**
      * :compute
      */
-    compile project(":compute")
+    compile(project(":compute")) {
+        /**
+         * 禁止传递依赖
+         */
+        transitive = false
+        /**
+         * 排除项目中依赖
+         */
+        exclude group: 'com.fasterxml.jackson.core'
+    }
 }
