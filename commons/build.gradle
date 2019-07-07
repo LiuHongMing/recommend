@@ -9,6 +9,15 @@ repositories {
     mavenCentral()
 }
 
+
+jar {
+    manifest {
+        attributes "Manifest-Version": "1.0",
+                "Premain-Class": "com.github.tiger.agent.GreetingAgent",
+                "Can-Redefine-Classes": "true"
+    }
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
